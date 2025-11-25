@@ -1,0 +1,915 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>通用API代理服务 - 管理后台</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            padding: 24px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+
+        .header h1 {
+            color: #333;
+            font-size: 28px;
+            margin-bottom: 8px;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 24px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .stat-card h3 {
+            color: #666;
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 12px;
+        }
+
+        .stat-card .value {
+            font-size: 32px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        .stat-card .label {
+            font-size: 12px;
+            color: #999;
+        }
+
+        .stat-card.success .value { color: #10b981; }
+        .stat-card.error .value { color: #ef4444; }
+        .stat-card.info .value { color: #3b82f6; }
+        .stat-card.warning .value { color: #f59e0b; }
+
+        .main-panel {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .tabs {
+            display: flex;
+            border-bottom: 1px solid #e5e7eb;
+            background: #f9fafb;
+        }
+
+        .tab {
+            padding: 16px 24px;
+            cursor: pointer;
+            border: none;
+            background: none;
+            font-size: 14px;
+            font-weight: 500;
+            color: #666;
+            transition: all 0.3s;
+            border-bottom: 2px solid transparent;
+        }
+
+        .tab:hover {
+            color: #667eea;
+        }
+
+        .tab.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+            background: white;
+        }
+
+        .tab-content {
+            display: none;
+            padding: 24px;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .filters {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 12px;
+            margin-bottom: 20px;
+            padding: 20px;
+            background: #f9fafb;
+            border-radius: 8px;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .filter-group label {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 6px;
+            font-weight: 500;
+        }
+
+        .filter-group input,
+        .filter-group select {
+            padding: 8px 12px;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        .filter-group input:focus,
+        .filter-group select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5568d3;
+        }
+
+        .btn-secondary {
+            background: #f3f4f6;
+            color: #666;
+        }
+
+        .btn-secondary:hover {
+            background: #e5e7eb;
+        }
+
+        .table-container {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            background: #f9fafb;
+            padding: 12px;
+            text-align: left;
+            font-size: 12px;
+            font-weight: 600;
+            color: #666;
+            text-transform: uppercase;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        td {
+            padding: 12px;
+            border-bottom: 1px solid #f3f4f6;
+            font-size: 14px;
+        }
+
+        /* 统计表格列宽优化 */
+        .stats-content table {
+            table-layout: fixed;
+        }
+
+        .stats-content th:nth-child(1), /* 状态码 */
+        .stats-content td:nth-child(1) {
+            width: 80px;
+            text-align: center;
+        }
+
+        .stats-content th:nth-child(2), /* 数量 */
+        .stats-content td:nth-child(2) {
+            width: 100px;
+            text-align: center;
+        }
+
+        .stats-content th:nth-child(3), /* 占比 */
+        .stats-content td:nth-child(3) {
+            width: 80px;
+            text-align: center;
+        }
+
+        /* 热门API路径表格列宽 */
+        #topPathsStats th:nth-child(1), /* API路径 */
+        #topPathsStats td:nth-child(1) {
+            width: auto;
+            text-align: left;
+        }
+
+        #topPathsStats th:nth-child(2), /* 请求次数 */
+        #topPathsStats td:nth-child(2) {
+            width: 100px;
+            text-align: center;
+        }
+
+        #topPathsStats th:nth-child(3), /* 平均耗时 */
+        #topPathsStats td:nth-child(3) {
+            width: 100px;
+            text-align: center;
+        }
+
+        #topPathsStats th:nth-child(4), /* 成功率 */
+        #topPathsStats td:nth-child(4) {
+            width: 80px;
+            text-align: center;
+        }
+
+        /* 小时趋势表格列宽 */
+        #hourlyTrendStats th:nth-child(1), /* 小时 */
+        #hourlyTrendStats td:nth-child(1) {
+            width: 80px;
+            text-align: center;
+        }
+
+        #hourlyTrendStats th:nth-child(2), /* 请求数 */
+        #hourlyTrendStats td:nth-child(2) {
+            width: 100px;
+            text-align: center;
+        }
+
+        #hourlyTrendStats th:nth-child(3), /* 平均耗时 */
+        #hourlyTrendStats td:nth-child(3) {
+            width: 100px;
+            text-align: center;
+        }
+
+        tr:hover {
+            background: #f9fafb;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .badge.success {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .badge.error {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .badge.info {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .badge.method {
+            background: #e0e7ff;
+            color: #3730a3;
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #e5e7eb;
+        }
+
+        .pagination button {
+            padding: 6px 12px;
+            border: 1px solid #e5e7eb;
+            background: white;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .pagination button:hover:not(:disabled) {
+            background: #f3f4f6;
+        }
+
+        .pagination button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .pagination .page-info {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+
+        .error-message {
+            background: #fee2e2;
+            color: #991b1b;
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+        }
+
+        .detail-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .detail-modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 12px;
+            max-width: 800px;
+            max-height: 80vh;
+            overflow-y: auto;
+            margin: 20px;
+        }
+
+        .modal-header {
+            padding: 20px;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h3 {
+            font-size: 18px;
+            color: #333;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #666;
+            padding: 0;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 4px;
+        }
+
+        .modal-close:hover {
+            background: #f3f4f6;
+        }
+
+        .modal-body {
+            padding: 20px;
+        }
+
+        pre {
+            background: #f9fafb;
+            padding: 12px;
+            border-radius: 6px;
+            overflow-x: auto;
+            font-size: 12px;
+            line-height: 1.5;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔄 通用API代理服务</h1>
+            <p>记录和监控任何API的请求与响应</p>
+        </div>
+
+        <div class="stats-grid" id="statsGrid">
+            <div class="stat-card info">
+                <h3>今日总请求</h3>
+                <div class="value" id="totalRequests">-</div>
+                <div class="label">Total Requests</div>
+            </div>
+            <div class="stat-card success">
+                <h3>成功请求</h3>
+                <div class="value" id="successRequests">-</div>
+                <div class="label">Success</div>
+            </div>
+            <div class="stat-card error">
+                <h3>失败请求</h3>
+                <div class="value" id="failedRequests">-</div>
+                <div class="label">Failed</div>
+            </div>
+            <div class="stat-card warning">
+                <h3>平均耗时</h3>
+                <div class="value" id="avgDuration">-</div>
+                <div class="label">Milliseconds</div>
+            </div>
+        </div>
+
+        <div class="main-panel">
+            <div class="tabs">
+                <button class="tab active" onclick="switchTab('logs')">日志查询</button>
+                <button class="tab" onclick="switchTab('stats')">统计分析</button>
+            </div>
+
+            <div id="logsTab" class="tab-content active">
+                <div class="filters">
+                    <div class="filter-group">
+                        <label>请求方法</label>
+                        <select id="filterMethod">
+                            <option value="">全部</option>
+                            <option value="GET">GET</option>
+                            <option value="POST">POST</option>
+                            <option value="PUT">PUT</option>
+                            <option value="DELETE">DELETE</option>
+                            <option value="PATCH">PATCH</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>请求路径</label>
+                        <input type="text" id="filterPath" placeholder="输入路径关键词">
+                    </div>
+                    <div class="filter-group">
+                        <label>响应状态</label>
+                        <select id="filterStatus">
+                            <option value="">全部</option>
+                            <option value="200">200 OK</option>
+                            <option value="201">201 Created</option>
+                            <option value="400">400 Bad Request</option>
+                            <option value="401">401 Unauthorized</option>
+                            <option value="404">404 Not Found</option>
+                            <option value="500">500 Server Error</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>开始时间</label>
+                        <input type="datetime-local" id="filterStartDate">
+                    </div>
+                    <div class="filter-group">
+                        <label>结束时间</label>
+                        <input type="datetime-local" id="filterEndDate">
+                    </div>
+                    <div class="filter-group" style="align-self: end;">
+                        <button class="btn btn-primary" onclick="searchLogs()">🔍 查询</button>
+                    </div>
+                </div>
+
+                <div id="logsContent">
+                    <div class="loading">正在加载数据...</div>
+                </div>
+            </div>
+
+            <div id="statsTab" class="tab-content">
+                <div class="stats-grid">
+                    <div class="stats-card">
+                        <h3>📊 状态码分布</h3>
+                        <div id="statusCodeStats" class="stats-content">
+                            <div class="loading">加载中...</div>
+                        </div>
+                    </div>
+                    
+                    <div class="stats-card">
+                        <h3>🔥 热门API路径</h3>
+                        <div id="topPathsStats" class="stats-content">
+                            <div class="loading">加载中...</div>
+                        </div>
+                    </div>
+                    
+                    <div class="stats-card">
+                        <h3>📈 24小时趋势</h3>
+                        <div id="hourlyTrendStats" class="stats-content">
+                            <div class="loading">加载中...</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="detailModal" class="detail-modal" onclick="closeModal(event)">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <h3>请求详情</h3>
+                <button class="modal-close" onclick="closeModal()">&times;</button>
+            </div>
+            <div class="modal-body" id="modalBody">
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = window.location.origin + '/api_proxy_logs';
+        const AUTH = 'Basic ' + btoa('admin:admin123'); // 默认账号密码
+
+        let currentPage = 1;
+        let currentFilters = {};
+
+        // 页面加载时初始化
+        window.addEventListener('DOMContentLoaded', () => {
+            loadOverview();
+            loadLogs();
+            
+            // 设置默认日期时间（今天全天）
+            const today = new Date();
+            const todayDate = today.toISOString().split('T')[0];
+            document.getElementById('filterStartDate').value = `${todayDate}T00:00`;
+            document.getElementById('filterEndDate').value = `${todayDate}T23:59`;
+        });
+
+        // 加载概览数据
+        async function loadOverview() {
+            try {
+                const response = await fetch(`${API_BASE}/admin/overview`, {
+                    headers: { 'Authorization': AUTH }
+                });
+                const data = await response.json();
+                
+                if (data.success) {
+                    document.getElementById('totalRequests').textContent = data.data.totalRequests;
+                    document.getElementById('successRequests').textContent = data.data.successRequests;
+                    document.getElementById('failedRequests').textContent = data.data.failedRequests;
+                    document.getElementById('avgDuration').textContent = data.data.avgDuration + 'ms';
+                }
+            } catch (error) {
+                console.error('加载概览失败:', error);
+            }
+        }
+
+        // 加载日志列表
+        async function loadLogs(page = 1) {
+            const logsContent = document.getElementById('logsContent');
+            logsContent.innerHTML = '<div class="loading">正在加载数据...</div>';
+
+            try {
+                const params = new URLSearchParams({
+                    page,
+                    pageSize: 20,
+                    ...currentFilters
+                });
+
+                const response = await fetch(`${API_BASE}/admin/logs?${params}`, {
+                    headers: { 'Authorization': AUTH }
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    renderLogsTable(data);
+                    currentPage = page;
+                } else {
+                    logsContent.innerHTML = `<div class="error-message">加载失败: ${data.error}</div>`;
+                }
+            } catch (error) {
+                logsContent.innerHTML = `<div class="error-message">网络错误: ${error.message}</div>`;
+            }
+        }
+
+        // 渲染日志表格
+        function renderLogsTable(data) {
+            let html = `
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>时间</th>
+                                <th>方法</th>
+                                <th>路径</th>
+                                <th>状态码</th>
+                                <th>耗时</th>
+                                <th>IP</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+            `;
+
+            data.data.forEach(log => {
+                const status = log.success ? 
+                    '<span class="badge success">成功</span>' : 
+                    '<span class="badge error">失败</span>';
+                
+                const statusCode = log.response_status || '-';
+                const statusClass = log.response_status >= 200 && log.response_status < 300 ? 'success' : 'error';
+                
+                html += `
+                    <tr>
+                        <td>${formatDate(log.created_at)}</td>
+                        <td><span class="badge method">${log.request_method}</span></td>
+                        <td title="${log.request_path}">${truncate(log.request_path, 40)}</td>
+                        <td><span class="badge ${statusClass}">${statusCode}</span></td>
+                        <td>${log.duration}ms</td>
+                        <td>${log.ip_address || '-'}</td>
+                        <td>
+                            <button class="btn btn-secondary" onclick='showDetail(${JSON.stringify(log).replace(/'/g, "&#39;")})'>
+                                详情
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            html += `
+                        </tbody>
+                    </table>
+                </div>
+                <div class="pagination">
+                    <button onclick="loadLogs(${data.page - 1})" ${data.page === 1 ? 'disabled' : ''}>
+                        上一页
+                    </button>
+                    <span class="page-info">
+                        第 ${data.page} / ${data.totalPages} 页，共 ${data.total} 条
+                    </span>
+                    <button onclick="loadLogs(${data.page + 1})" ${data.page === data.totalPages ? 'disabled' : ''}>
+                        下一页
+                    </button>
+                </div>
+            `;
+
+            document.getElementById('logsContent').innerHTML = html;
+        }
+
+        // 搜索日志
+        function searchLogs() {
+            currentFilters = {
+                requestMethod: document.getElementById('filterMethod').value,
+                requestPath: document.getElementById('filterPath').value,
+                responseStatus: document.getElementById('filterStatus').value,
+                startDate: document.getElementById('filterStartDate').value,
+                endDate: document.getElementById('filterEndDate').value
+            };
+
+            // 移除空值
+            Object.keys(currentFilters).forEach(key => {
+                if (!currentFilters[key]) delete currentFilters[key];
+            });
+
+            loadLogs(1);
+        }
+
+        // 显示详情
+        function showDetail(log) {
+            const modalBody = document.getElementById('modalBody');
+            
+            let requestHeaders = '无';
+            let requestBody = '无';
+            let responseHeaders = '无';
+            let responseBody = '无';
+            
+            try {
+                requestHeaders = log.request_headers ? JSON.stringify(JSON.parse(log.request_headers), null, 2) : '无';
+            } catch (e) {}
+            
+            try {
+                requestBody = log.request_body ? JSON.stringify(JSON.parse(log.request_body), null, 2) : '无';
+            } catch (e) {
+                requestBody = log.request_body || '无';
+            }
+
+            try {
+                responseHeaders = log.response_headers ? JSON.stringify(JSON.parse(log.response_headers), null, 2) : '无';
+            } catch (e) {}
+            
+            try {
+                responseBody = log.response_body ? JSON.stringify(JSON.parse(log.response_body), null, 2) : '无';
+            } catch (e) {
+                responseBody = log.response_body || '无';
+            }
+
+            modalBody.innerHTML = `
+                <h4>基本信息</h4>
+                <p><strong>请求ID:</strong> ${log.request_id}</p>
+                <p><strong>请求方法:</strong> ${log.request_method}</p>
+                <p><strong>请求URL:</strong> ${log.request_url}</p>
+                <p><strong>请求路径:</strong> ${log.request_path}</p>
+                <p><strong>响应状态:</strong> ${log.response_status || '-'}</p>
+                <p><strong>耗时:</strong> ${log.duration}ms</p>
+                <p><strong>IP地址:</strong> ${log.ip_address || '-'}</p>
+                <p><strong>User-Agent:</strong> ${log.user_agent || '-'}</p>
+                <p><strong>创建时间:</strong> ${formatDate(log.created_at)}</p>
+                
+                <h4 style="margin-top: 20px;">请求头</h4>
+                <pre>${requestHeaders}</pre>
+                
+                <h4 style="margin-top: 20px;">请求体</h4>
+                <pre>${requestBody}</pre>
+                
+                <h4 style="margin-top: 20px;">响应头</h4>
+                <pre>${responseHeaders}</pre>
+                
+                <h4 style="margin-top: 20px;">响应体</h4>
+                <pre>${responseBody}</pre>
+            `;
+
+            document.getElementById('detailModal').classList.add('active');
+        }
+
+        // 关闭模态框
+        function closeModal(event) {
+            if (!event || event.target.id === 'detailModal') {
+                document.getElementById('detailModal').classList.remove('active');
+            }
+        }
+
+        // 切换标签页
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            
+            event.target.classList.add('active');
+            document.getElementById(tabName + 'Tab').classList.add('active');
+            
+            // 如果切换到统计标签页，加载统计数据
+            if (tabName === 'stats') {
+                loadStatsData();
+            }
+        }
+
+        // 加载统计数据
+        async function loadStatsData() {
+            try {
+                // 获取今天日期范围
+                const today = new Date();
+                const todayDate = today.toISOString().split('T')[0];
+                const startDate = `${todayDate}T00:00`;
+                const endDate = `${todayDate}T23:59`;
+                
+                // 并行加载所有统计数据
+                await Promise.all([
+                    loadStatusCodeStats(startDate, endDate),
+                    loadTopPathsStats(startDate, endDate),
+                    loadHourlyTrendStats(startDate, endDate)
+                ]);
+            } catch (error) {
+                console.error('加载统计数据失败:', error);
+            }
+        }
+
+        // 加载状态码分布统计
+        async function loadStatusCodeStats(startDate, endDate) {
+            try {
+                const response = await fetch(`${API_BASE}/admin/stats/status-codes?startDate=${startDate}&endDate=${endDate}`, {
+                    headers: { 'Authorization': AUTH }
+                });
+                const data = await response.json();
+                
+                if (data.success) {
+                    const container = document.getElementById('statusCodeStats');
+                    let html = '<table><thead><tr><th>状态码</th><th>数量</th><th>占比</th></tr></thead><tbody>';
+                    
+                    data.data.forEach(item => {
+                        const statusClass = item.status_code >= 200 && item.status_code < 300 ? 'success' : 
+                                          item.status_code >= 400 ? 'error' : 'warning';
+                        html += `<tr>
+                            <td class="${statusClass}">${item.status_code}</td>
+                            <td>${item.count}</td>
+                            <td>${item.percentage}%</td>
+                        </tr>`;
+                    });
+                    
+                    html += '</tbody></table>';
+                    container.innerHTML = html;
+                }
+            } catch (error) {
+                document.getElementById('statusCodeStats').innerHTML = '<div class="error">加载失败</div>';
+            }
+        }
+
+        // 加载热门API路径统计
+        async function loadTopPathsStats(startDate, endDate) {
+            try {
+                const response = await fetch(`${API_BASE}/admin/stats/top-paths?startDate=${startDate}&endDate=${endDate}`, {
+                    headers: { 'Authorization': AUTH }
+                });
+                const data = await response.json();
+                
+                if (data.success) {
+                    const container = document.getElementById('topPathsStats');
+                    let html = '<table><thead><tr><th>API路径</th><th>请求次数</th><th>平均耗时</th><th>成功率</th></tr></thead><tbody>';
+                    
+                    data.data.forEach(item => {
+                        html += `<tr>
+                            <td>${item.request_path}</td>
+                            <td>${item.count}</td>
+                            <td>${Math.round(item.avg_duration)}ms</td>
+                            <td>${item.success_rate}%</td>
+                        </tr>`;
+                    });
+                    
+                    html += '</tbody></table>';
+                    container.innerHTML = html;
+                }
+            } catch (error) {
+                document.getElementById('topPathsStats').innerHTML = '<div class="error">加载失败</div>';
+            }
+        }
+
+        // 加载小时趋势统计
+        async function loadHourlyTrendStats(startDate, endDate) {
+            try {
+                const response = await fetch(`${API_BASE}/admin/stats/hourly-trend?startDate=${startDate}&endDate=${endDate}`, {
+                    headers: { 'Authorization': AUTH }
+                });
+                const data = await response.json();
+                
+                if (data.success) {
+                    const container = document.getElementById('hourlyTrendStats');
+                    let html = '<table><thead><tr><th>小时</th><th>请求数</th><th>平均耗时</th></tr></thead><tbody>';
+                    
+                    data.data.forEach(item => {
+                        html += `<tr>
+                            <td>${item.hour}:00</td>
+                            <td>${item.count}</td>
+                            <td>${Math.round(item.avg_duration)}ms</td>
+                        </tr>`;
+                    });
+                    
+                    html += '</tbody></table>';
+                    container.innerHTML = html;
+                }
+            } catch (error) {
+                document.getElementById('hourlyTrendStats').innerHTML = '<div class="error">加载失败</div>';
+            }
+        }
+
+        // 格式化日期
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleString('zh-CN', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            });
+        }
+
+        // 截断长文本
+        function truncate(str, len) {
+            if (!str) return '-';
+            return str.length > len ? str.substring(0, len) + '...' : str;
+        }
+
+        // 定时刷新概览数据
+        setInterval(loadOverview, 30000); // 每30秒刷新一次
+    </script>
+</body>
+</html>
