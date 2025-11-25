@@ -84,7 +84,7 @@ npm run dev
 
 ```env
 # 服务配置
-PORT=8098
+PORT=3000
 NODE_ENV=development
 
 # MySQL数据库配置
@@ -106,9 +106,9 @@ ADMIN_PASSWORD=your_secure_password
 
 | 服务 | 地址 | 说明 |
 |------|------|------|
-| **管理后台** | `http://localhost:8098/api_proxy_logs/admin.html` | Web管理界面 |
-| **健康检查** | `http://localhost:8098/api_proxy_logs/health` | 服务状态 |
-| **API代理** | `http://localhost:8098/*` | 转发所有其他请求 |
+| **管理后台** | `http://localhost:3000/api_proxy_logs/admin.html` | Web管理界面 |
+| **健康检查** | `http://localhost:3000/api_proxy_logs/health` | 服务状态 |
+| **API代理** | `http://localhost:3000/*` | 转发所有其他请求 |
 
 ## � 使用指南
 
@@ -116,7 +116,7 @@ ADMIN_PASSWORD=your_secure_password
 
 **基本代理规则**：
 ```
-客户端请求: http://localhost:8098/users/123
+客户端请求: http://localhost:3000/users/123
 实际转发到: TARGET_API_URL/users/123
 ```
 
@@ -125,17 +125,17 @@ ADMIN_PASSWORD=your_secure_password
 # 配置 TARGET_API_URL=https://api.github.com
 
 # 获取用户信息
-curl http://localhost:8098/users/octocat
+curl http://localhost:3000/users/octocat
 # 实际请求: https://api.github.com/users/octocat
 
 # 创建仓库
-curl -X POST http://localhost:8098/user/repos -d '{"name":"my-repo"}'
+curl -X POST http://localhost:3000/user/repos -d '{"name":"my-repo"}'
 # 实际请求: https://api.github.com/user/repos
 ```
 
 ### 📊 管理后台操作
 
-1. **访问管理后台**: `http://localhost:8098/api_proxy_logs/admin.html`
+1. **访问管理后台**: `http://localhost:3000/api_proxy_logs/admin.html`
 2. **登录认证**: 使用 `.env` 中配置的用户名密码
 3. **查看日志**: 在"日志查询"标签页筛选和查看请求记录
 4. **统计分析**: 在"统计分析"标签页查看各种统计图表
@@ -249,14 +249,14 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm ci --only=production
 COPY . .
-EXPOSE 8098
+EXPOSE 3000
 CMD ["npm", "start"]
 ```
 
 ```bash
 # 构建和运行
 docker build -t api-proxy-logger .
-docker run -d -p 8098:8098 --env-file .env api-proxy-logger
+docker run -d -p 3000:3000 --env-file .env api-proxy-logger
 ```
 
 ### ⚡ PM2部署 (推荐)
@@ -283,7 +283,7 @@ server {
     server_name your-domain.com;
     
     location / {
-        proxy_pass http://localhost:8098;
+        proxy_pass http://localhost:3000;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
