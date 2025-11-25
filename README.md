@@ -5,16 +5,18 @@
 [![MySQL](https://img.shields.io/badge/MySQL-%3E%3D5.7-blue.svg)](https://www.mysql.com/)
 [![Build Status](https://img.shields.io/badge/build-passing-brightgreen.svg)]()
 
-> 📊 **通用API代理服务** - 基于 Node.js + Express + MySQL 的API代理与日志记录系统，支持任何HTTP API的透明代理和完整监控。
+> **通用API代理服务** - 基于 Node.js + Express + MySQL 的API代理与日志记录系统，支持任何HTTP API的透明代理和完整监控。
 
-## � 截图预览
+## 📸 截图预览
 
 ### 🎯 管理后台
+![管理后台界面](https://via.placeholder.com/800x400/4CAF50/white?text=Admin+Dashboard)
 - **实时监控**: 查看API请求状态和性能指标
 - **智能筛选**: 支持多条件组合查询
 - **详细统计**: 状态码分布、热门API、时间趋势分析
 
 ### 📊 统计分析
+![统计分析页面](https://via.placeholder.com/800x400/2196F3/white?text=Statistics+Dashboard)
 - **状态码分布**: 实时了解API健康状态
 - **热门路径**: 识别高频访问接口
 - **时间趋势**: 分析24小时访问模式
