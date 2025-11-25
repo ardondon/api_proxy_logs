@@ -311,14 +311,16 @@ server {
 
 | 变量名 | 说明 | 默认值 | 必填 |
 |--------|------|--------|------|
-| `PORT` | 服务端口 | 8098 | ❌ |
+| `PORT` | 服务端口 | 3000 | ❌ |
 | `NODE_ENV` | 运行环境 | development | ❌ |
 | `DB_HOST` | MySQL主机 | localhost | ✅ |
 | `DB_PORT` | MySQL端口 | 3306 | ❌ |
 | `DB_USER` | 数据库用户 | root | ✅ |
-| `DB_PASSWORD` | 数据库密码 | - | ✅ |
+| `DB_PASSWORD` | 数据库密码 | your_password | ✅ |
 | `DB_NAME` | 数据库名 | api_proxy_logs | ✅ |
-| `TARGET_API_URL` | 目标API地址 | - | ✅ |
+| `TARGET_API_URL` | 目标API地址 | https://api.example.com | ✅ |
+| `LOG_LEVEL` | 日志级别 | info | ❌ |
+| `LOG_DIR` | 日志目录 | logs | ❌ |
 | `ADMIN_USERNAME` | 管理员用户名 | admin | ❌ |
 | `ADMIN_PASSWORD` | 管理员密码 | admin123 | ❌ |
 
