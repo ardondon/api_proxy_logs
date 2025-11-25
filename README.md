@@ -457,11 +457,17 @@ OPTIMIZE TABLE api_logs;
 
 ---
 
+## ⭐ Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=ardondon/api_proxy_logs&type=Date)](https://star-history.com/#ardondon/api_proxy_logs&Date)
+
+---
+
 ## 📞 联系方式
 
 - **GitHub**: [@ardondon](https://github.com/ardondon)
 - **Issues**: [提交问题](https://github.com/ardondon/api_proxy_logs/issues)
-- **邮箱**: [your-email@example.com]
+- **邮箱**: [ardondon@163.com]
 
 ---
 
